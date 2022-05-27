@@ -7,6 +7,8 @@ let board = new Array(boardHeight).fill(0).map(() => new Array(boardWidth).fill(
 const boardStartX = 7
 const boardStartY = 1
 const blockSize = 32
+let points = 0
+let level = 1
 
 const background = {
   tick(ctx) {
@@ -57,7 +59,7 @@ const ellPiece = {
     [[0,1],[1,1],[2,1],[0,0]],
     [[0,0],[0,1],[0,2],[1,0]],
   ],
-  offset: [1, 0],
+  offset: [-1, 0],
   type: 1,
   direction: 0
 }
@@ -69,7 +71,7 @@ const jeyPiece = {
     [[0,0],[0,1],[1,0],[2,0]],
     [[0,0],[1,0],[1,1],[1,2]],
   ],
-  offset: [1, 0],
+  offset: [-1, 0],
   type: 1,
   direction: 0
 }
@@ -104,10 +106,16 @@ function nextPiece() {
   currentPiece = Object.assign({
     position: [boardStartY, boardStartX]
   }, randomPiece)
+
+  if(checkCollision()) {
+    renderPieceToBoard(currentPiece)
+    currentPiece = null
+    gameOver()
+  }
 }
 nextPiece()
 
-const checkCollision = () => {
+function checkCollision () {
   return currentPiece.shapes[currentPiece.direction].some(element => {
     const y = currentPiece.position[0] + element[0] + currentPiece.offset[0]
     const x = currentPiece.position[1] + element[1] + currentPiece.offset[1]
@@ -119,6 +127,7 @@ const checkCollision = () => {
     if (board[y][x] === 1) {
       return true
     }
+
     return false
   })
 } 
@@ -129,7 +138,6 @@ const checkBorders = () => {
 
     if (x < 0) {
       return 1
-      
     }
 
     if ( x > boardWidth - 1) {
@@ -141,27 +149,33 @@ const checkBorders = () => {
 } 
 
 const renderPieceToBoard = (piece) => {
-  renderCurrentPiece.timeout = 1500
-  let crashed = false
   piece.shapes[piece.direction].forEach(element => {
     const y = piece.position[0] + element[0] + piece.offset[0]
     const x = piece.position[1] + element[1] + piece.offset[1]
-    if (y < 0) {
-      crashed = true
-      return
-    }
+
     board[y][x] = 1
   })
+}
 
-  if (crashed) {
-    gameOver()
-    return
-  }
+const scoring = [0, 100, 300, 500, 800]
+
+const addScore = (linesCleared) => {
+  points += scoring[linesCleared]
+  console.log(points)
+}
+
+const pieceDone = (piece) => {
+  renderCurrentPiece.timeout = 1500
+
+  renderPieceToBoard(piece)
 
   board = board.filter(line => !line.every(tile => tile === 1))
-  const linesToAdd = boardHeight - board.length
-  console.log('linesToAdd', linesToAdd, 'height', boardHeight, 'board length', board.length)
-  board.splice(0, 0, ...(new Array(linesToAdd).fill(0).map(() => new Array(boardWidth).fill(0))))
+  const linesCleared = boardHeight - board.length
+
+  addScore(linesCleared)
+
+  console.log('linesCleared', linesCleared, 'height', boardHeight, 'board length', board.length)
+  board.splice(0, 0, ...(new Array(linesCleared).fill(0).map(() => new Array(boardWidth).fill(0))))
   console.log(board.length, board[0])
 
   setTimeout(() => {
@@ -187,7 +201,7 @@ const renderCurrentPiece = {
       if (checkCollision()) {
         console.log('collsion')
         currentPiece.position[0] -= 1
-        renderPieceToBoard(currentPiece)
+        pieceDone(currentPiece)
         currentPiece = null
         return
       }
