@@ -4,7 +4,8 @@ const loop = new kk.Loop(canvas.getContext('2d'))
 const boardHeight = 25
 const boardWidth = 15 
 let board = new Array(boardHeight).fill(0).map(() => new Array(boardWidth).fill(0))
-const boardCenter = 7
+const boardStartX = 7
+const boardStartY = 1
 const blockSize = 32
 
 const background = {
@@ -12,6 +13,10 @@ const background = {
     ctx.fillStyle = 'fuchsia'
     ctx.fillRect(0, 0, 480, 800)
   }
+}
+
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 const teePiece = {
@@ -22,12 +27,29 @@ const teePiece = {
     [[1,0],[0,1],[1,1],[2,1]],
   ],
   offset: [-1,-1],
+  direction: 2
+}
+
+const straightPiece = {
+  shapes: [
+    [[0,0],[0,1],[0,2],[0,3]],
+    [[0,0],[1,0],[2,0],[3,0]],
+  ],
+  offset: [-1,0],
   direction: 0
 }
 
-let currentPiece = Object.assign({
-  position: [0, boardCenter]
-}, teePiece)
+const allPieces = [teePiece, straightPiece]
+
+let currentPiece;
+function nextPiece() {
+  const randomPieceNumber = getRandomInt(0, allPieces.length - 1)
+  const randomPiece = allPieces[randomPieceNumber]
+  currentPiece = Object.assign({
+    position: [boardStartY, boardStartX]
+  }, randomPiece)
+}
+nextPiece()
 
 const checkCollision = () => {
   return currentPiece.shapes[currentPiece.direction].some(element => {
@@ -81,10 +103,9 @@ const renderPieceToBoard = (piece) => {
   console.log(board.length, board[0])
 
   setTimeout(() => {
-    currentPiece = Object.assign({
-      position: [0, boardCenter]
-    }, teePiece)
-  }, 1500)
+    renderCurrentPiece.currentTime = 1500
+    nextPiece()
+  }, 250)
 }
 
 const gameOver = () => {
