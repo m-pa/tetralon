@@ -10,7 +10,7 @@ const blockSize = 32
 
 const background = {
   tick(ctx) {
-    ctx.fillStyle = 'fuchsia'
+    ctx.fillStyle = '#EDECB6'
     ctx.fillRect(0, 0, 480, 800)
   }
 }
@@ -27,19 +27,75 @@ const teePiece = {
     [[1,0],[0,1],[1,1],[2,1]],
   ],
   offset: [-1,-1],
+  type: 0,
   direction: 2
 }
 
 const straightPiece = {
   shapes: [
-    [[0,0],[0,1],[0,2],[0,3]],
-    [[0,0],[1,0],[2,0],[3,0]],
+    [[2,0],[2,1],[2,2],[2,3]],
+    [[0,1],[1,1],[2,1],[3,1]],
   ],
-  offset: [-1,0],
+  offset: [-2,-1],
+  type: 1,
   direction: 0
 }
 
-const allPieces = [teePiece, straightPiece]
+const squarePiece = {
+  shapes: [
+    [[0,0],[0,1],[1,1],[1,0]],
+  ],
+  offset: [0, 0],
+  type: 1,
+  direction: 0
+}
+
+const ellPiece = {
+  shapes: [
+    [[0,0],[1,0],[2,0],[2,1]],
+    [[1,0],[1,1],[1,2],[0,2]],
+    [[0,1],[1,1],[2,1],[0,0]],
+    [[0,0],[0,1],[0,2],[1,0]],
+  ],
+  offset: [1, 0],
+  type: 1,
+  direction: 0
+}
+
+const jeyPiece = {
+  shapes: [
+    [[0,1],[1,1],[2,1],[2,0]],
+    [[0,0],[0,1],[0,2],[1,2]],
+    [[0,0],[0,1],[1,0],[2,0]],
+    [[0,0],[1,0],[1,1],[1,2]],
+  ],
+  offset: [1, 0],
+  type: 1,
+  direction: 0
+}
+
+const squigglePieceA = {
+  shapes: [
+    [[1,0],[1,1],[0,1],[0,2]],
+    [[0,0],[1,0],[1,1],[2,1]],
+  ],
+  offset: [-1, -1],
+  type: 1,
+  direction: 0
+}
+
+
+const squigglePieceB = {
+  shapes: [
+    [[0,0],[0,1],[1,1],[1,2]],
+    [[0,1],[1,1],[1,0],[2,0]],
+  ],
+  offset: [-1, -1],
+  type: 1,
+  direction: 0
+}
+
+const allPieces = [teePiece, straightPiece, squarePiece, ellPiece, jeyPiece, squigglePieceA, squigglePieceB]
 
 let currentPiece;
 function nextPiece() {
@@ -68,14 +124,20 @@ const checkCollision = () => {
 } 
 
 const checkBorders = () => {
-  return currentPiece.shapes[currentPiece.direction].some(element => {
+  for (let element of currentPiece.shapes[currentPiece.direction]) {
     const x = currentPiece.position[1] + element[1] + currentPiece.offset[1]
 
-    if (x < 0 || x > boardWidth - 1) {
-      return true
+    if (x < 0) {
+      return 1
+      
     }
-    return false
-  })
+
+    if ( x > boardWidth - 1) {
+      return 2
+    }
+  }
+
+  return false
 } 
 
 const renderPieceToBoard = (piece) => {
@@ -175,17 +237,27 @@ const rotateRight = (piece) => {
 
 const shiftLeft = (piece) => {
   piece.position[1] -= 1
-
-  if(checkBorders()) {
-    piece.position[1] += 1
-  }
 }
 
 const shiftRight = (piece) => {
   piece.position[1] += 1
+}
 
-  if(checkBorders()) {
-    piece.position[1] -= 1
+const handleRotateBorderCollision = () => {
+  const borderCheck = checkBorders()
+
+  if (borderCheck === 1) {
+    shiftRight(currentPiece)
+    return -1
+  }
+
+  if (borderCheck === 2) {
+    shiftLeft(currentPiece)
+    if (currentPiece.type === straightPiece.type) {
+      shiftLeft(currentPiece)
+      return 2
+    }
+    return 1
   }
 }
 
@@ -198,12 +270,12 @@ const keyHandler = (evt) => {
         
         if (checkCollision()) {
           rotateRight(currentPiece)
-          renderPieceToBoard(currentPiece)
-          currentPiece = null
           return
         }
         
-        if (checkBorders()) {
+        const revert = handleRotateBorderCollision()
+        if (checkCollision()) {
+          currentPiece.position[1] += revert
           rotateRight(currentPiece)
         }
       }
@@ -215,12 +287,12 @@ const keyHandler = (evt) => {
 
         if (checkCollision()) {
           rotateLeft(currentPiece)
-          renderPieceToBoard(currentPiece)
-          currentPiece = null
           return
         }
 
-        if (checkBorders()) {
+        const revert = handleRotateBorderCollision()
+        if (checkCollision()) {
+          currentPiece.position[1] += revert
           rotateLeft(currentPiece)
         }
       }
@@ -229,18 +301,34 @@ const keyHandler = (evt) => {
     case 'ArrowLeft':
       if (currentPiece) {
         shiftLeft(currentPiece)
+
+        if(checkBorders() || checkCollision()) {
+          shiftRight(currentPiece)
+        }
       }
-      
       break;
+
     case 'ArrowRight':
       if (currentPiece) {
         shiftRight(currentPiece)
+
+        if(checkBorders() || checkCollision()) {
+          shiftLeft(currentPiece)
+        }
       }
     break;
 
     case 'ArrowDown':
       if (currentPiece) {
         renderCurrentPiece.timeout = 125
+      }
+    break;
+
+    case 'KeyP':
+      if (loop._tickTimeout === null) {
+        loop.start()
+      } else {
+        loop.stop()
       }
     break;
     default:
