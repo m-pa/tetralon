@@ -10,7 +10,7 @@
       margin: 0;
       background-color: #aaa;
     }
-    body {
+    #gameContainer {
       display: flex;
       justify-content: center;
       padding-top: 100px;
@@ -18,11 +18,24 @@
     canvas {
       border: 3px solid black;
     }
+    #overlay {
+      position: absolute;
+      top: 50%;
+    }
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
 <body>
-  <canvas id="tetrix" width="480" height="800"></canvas>
+  <div id="gameContainer">
+    <canvas id="tetrix" width="480" height="800"></canvas>
+    <div id="overlay">
+      <button id="startButton">start</button>
+    </div>
+  </div>
   <script src="./loop.js"></script>
+  <script src="./flashtext.js"></script>
   <script src="./tetrix.js"></script>
 </body>
 </html>

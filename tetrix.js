@@ -1,6 +1,20 @@
 const canvas = document.querySelector('#tetrix')
 const loop = new kk.Loop(canvas.getContext('2d'))
+const music = new Audio('tetris1.ogg');
 
+const startButton = document.querySelector('#startButton')
+const overlay = document.querySelector('#overlay')
+startButton.addEventListener('mousedown', startHandler)
+
+function startHandler() {
+  overlay.className = 'hidden'
+  music.volume = 0.2
+  music.play();
+  loop.start()
+}
+
+const pixelWidth = 480
+const pixelHeight = 800
 const boardHeight = 25
 const boardWidth = 15 
 let board = new Array(boardHeight).fill(0).map(() => new Array(boardWidth).fill(0))
@@ -10,10 +24,20 @@ const blockSize = 32
 let points = 0
 let level = 1
 
+const pointFlash = new kk.FlashText({
+  x: pixelWidth / 2,
+  y: pixelHeight / 3,
+  color: '#5d7141',
+  speed: 10,
+  timeout: 2000,
+  font: '800 40px Tahoma',
+  shadowBlur: 2
+})
+
 const background = {
   tick(ctx) {
     ctx.fillStyle = '#EDECB6'
-    ctx.fillRect(0, 0, 480, 800)
+    ctx.fillRect(0, 0, pixelWidth, pixelHeight)
   }
 }
 
@@ -160,7 +184,12 @@ const renderPieceToBoard = (piece) => {
 const scoring = [0, 100, 300, 500, 800]
 
 const addScore = (linesCleared) => {
-  points += scoring[linesCleared]
+  const gained = scoring[linesCleared]
+  if (gained > 0) {
+    pointFlash.msg(gained.toString())
+  }
+  points += gained
+
   console.log(points)
 }
 
@@ -341,7 +370,9 @@ const keyHandler = (evt) => {
     case 'KeyP':
       if (loop._tickTimeout === null) {
         loop.start()
+        music.play()
       } else {
+        music.pause()
         loop.stop()
       }
     break;
@@ -356,4 +387,5 @@ document.addEventListener('keydown', keyHandler);
 loop.push(background)
 loop.push(renderCurrentPiece)
 loop.push(renderBoard)
-loop.start()
+loop.push(pointFlash)
+
