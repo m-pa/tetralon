@@ -212,7 +212,7 @@ const pieceDone = (piece) => {
 
   renderPieceToBoard(piece)
 
-  board = board.filter(line => !line.every(tile => tile === 1))
+  board = board.filter(line => !line.every(tile => tile !== 0))
   const linesCleared = boardHeight - board.length
 
   addScore(linesCleared)
