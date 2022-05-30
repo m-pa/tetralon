@@ -9,6 +9,7 @@ startButton.addEventListener('mousedown', startHandler)
 function startHandler() {
   overlay.className = 'hidden'
   music.volume = 0.2
+  music.loop = true
   music.play();
   loop.start()
 }
@@ -54,7 +55,8 @@ const teePiece = {
   ],
   offset: [-1,-1],
   type: 0,
-  direction: 2
+  direction: 2,
+  color: '#800080'
 }
 
 const straightPiece = {
@@ -64,7 +66,9 @@ const straightPiece = {
   ],
   offset: [-2,-1],
   type: 1,
-  direction: 0
+  direction: 0,
+  label: 1,
+  color: '#00ffff'
 }
 
 const squarePiece = {
@@ -73,7 +77,9 @@ const squarePiece = {
   ],
   offset: [0, 0],
   type: 1,
-  direction: 0
+  direction: 0,
+  label: 2,
+  color: '#ffff00'
 }
 
 const ellPiece = {
@@ -85,7 +91,9 @@ const ellPiece = {
   ],
   offset: [-1, 0],
   type: 1,
-  direction: 0
+  direction: 0,
+  label: 3,
+  color: '#ff7f00'
 }
 
 const jeyPiece = {
@@ -97,7 +105,9 @@ const jeyPiece = {
   ],
   offset: [-1, 0],
   type: 1,
-  direction: 0
+  direction: 0,
+  label: 4,
+  color: '#0000ff'
 }
 
 const squigglePieceA = {
@@ -107,7 +117,9 @@ const squigglePieceA = {
   ],
   offset: [-1, -1],
   type: 1,
-  direction: 0
+  direction: 0,
+  label: 5,
+  color: '#00ff00'
 }
 
 
@@ -118,7 +130,9 @@ const squigglePieceB = {
   ],
   offset: [-1, -1],
   type: 1,
-  direction: 0
+  direction: 0,
+  label: 6,
+  color: '#ff0000'
 }
 
 const allPieces = [teePiece, straightPiece, squarePiece, ellPiece, jeyPiece, squigglePieceA, squigglePieceB]
@@ -148,7 +162,7 @@ function checkCollision () {
       return true
     }
 
-    if (board[y][x] === 1) {
+    if (board[y][x] !== 0) {
       return true
     }
 
@@ -177,7 +191,7 @@ const renderPieceToBoard = (piece) => {
     const y = piece.position[0] + element[0] + piece.offset[0]
     const x = piece.position[1] + element[1] + piece.offset[1]
 
-    board[y][x] = 1
+    board[y][x] = piece.label
   })
 }
 
@@ -242,22 +256,28 @@ const renderCurrentPiece = {
       const y = currentPiece.position[0] + element[0] + currentPiece.offset[0]
       const x = currentPiece.position[1] + element[1] + currentPiece.offset[1]
 
-      ctx.fillStyle = 'blue'
-
-      ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize)
+      renderTile(ctx, currentPiece, x, y)
     })
   },
   timeout: 1500,
   currentTime: 0
+}
+const renderTile = (ctx, piece, x, y) => {
+  ctx.fillStyle = piece.color
+  ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize)
+
+  ctx.fillStyle = 'black'
+  ctx.strokeRect(x * blockSize + 1, y * blockSize + 1, blockSize -2, blockSize -2)
 }
 
 const renderBoard = {
   tick(ctx) {
     for(let y = 0; y < boardHeight; y++) {
       for(let x = 0; x < boardWidth; x++) {
-        if (board[y][x] === 1) {
-          ctx.fillStyle = 'blue'
-          ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize)
+        const label = board[y][x]
+        if (label !== 0) {
+          const piece = allPieces.find(piece => piece.label === label)
+          renderTile(ctx, piece, x, y)
         }
       }
     }
