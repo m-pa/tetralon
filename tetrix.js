@@ -137,11 +137,15 @@ const squigglePieceB = {
 }
 
 const allPieces = [teePiece, straightPiece, squarePiece, ellPiece, jeyPiece, squigglePieceA, squigglePieceB]
-
+let currentPieces = shuffle([...allPieces])
 let currentPiece;
+
 function nextPiece() {
-  const randomPieceNumber = getRandomInt(0, allPieces.length - 1)
-  const randomPiece = allPieces[randomPieceNumber]
+  const randomPiece = currentPieces.shift()
+  if (currentPieces.length === 0) {
+    currentPieces = shuffle([...allPieces])
+  }
+
   currentPiece = Object.assign({
     position: [boardStartY, boardStartX]
   }, randomPiece)
@@ -153,6 +157,21 @@ function nextPiece() {
   }
 }
 nextPiece()
+
+// fisher-yates shuffle https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
+function shuffle(array) {
+  let currentIndex = array.length
+  let randomIndex = 0
+
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+
+  return array;
+}
 
 function checkCollision () {
   return currentPiece.shapes[currentPiece.direction].some(element => {
