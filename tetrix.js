@@ -1,7 +1,6 @@
 const canvas = document.querySelector('#tetrix')
 const loop = new kk.Loop(canvas.getContext('2d'))
 const music = new Audio('tetris1.ogg');
-
 const startButton = document.querySelector('#startButton')
 const overlay = document.querySelector('#overlay')
 startButton.addEventListener('mousedown', startHandler)
@@ -14,12 +13,14 @@ function startHandler() {
   loop.start()
 }
 
-const pixelWidth = 480
-const pixelHeight = 800
-const boardHeight = 25
-const boardWidth = 15 
+const boardHeight = 20
+const boardWidth = 10
+const pixelWidth = boardWidth * 32
+const pixelHeight = boardHeight * 32
+canvas.setAttribute('width', pixelWidth)
+canvas.setAttribute('height', pixelHeight)
 let board = new Array(boardHeight).fill(0).map(() => new Array(boardWidth).fill(0))
-const boardStartX = 7
+const boardStartX = 4
 const boardStartY = 1
 const blockSize = 32
 let points = 0
